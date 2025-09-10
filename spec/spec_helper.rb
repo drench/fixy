@@ -1,5 +1,5 @@
-require 'rspec'
-require 'fixy'
+require "rspec"
+require "fixy"
 
 RSpec.configure do |config|
   config.expect_with :rspec do |c|

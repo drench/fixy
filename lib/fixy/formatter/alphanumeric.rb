@@ -1,7 +1,6 @@
 module Fixy
   module Formatter
     module Alphanumeric
-
       #
       # Alphanumeric Formatter
       #
@@ -10,8 +9,8 @@ module Fixy
       #
 
       def format_alphanumeric(input, byte_width)
-        input_string = String.new(input.to_s).tr "#{self.class::LINE_ENDING_CRLF}#{line_ending}", ''
-        result = ''
+        input_string = String.new(input.to_s).tr "#{self.class::LINE_ENDING_CRLF}#{line_ending}", ""
+        result = ""
 
         if input_string.bytesize <= byte_width
           result << input_string
@@ -25,7 +24,7 @@ module Fixy
           end
         end
 
-        result << ' ' * (byte_width - result.bytesize)
+        result << " " * (byte_width - result.bytesize)
       end
     end
   end

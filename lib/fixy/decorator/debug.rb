@@ -53,7 +53,7 @@ module Fixy
         end
 
         def field(value, record_number, position, method, length, type)
-          "<span class='#{(record_number.even?? 'even' : 'odd')}' data-column='#{position}' data-method='#{method}' data-size='#{length}' data-format='#{type}'>#{value}</span>"
+          "<span class='#{record_number.even? ? "even" : "odd"}' data-column='#{position}' data-method='#{method}' data-size='#{length}' data-format='#{type}'>#{value}</span>"
         end
 
         def record(record)

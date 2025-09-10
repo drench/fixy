@@ -1,6 +1,6 @@
-require 'fixy/decorator/debug'
-require 'fixy/decorator/default'
-require 'fixy/document'
-require 'fixy/formatter/alphanumeric'
-require 'fixy/record'
-require 'fixy/version'
+require "fixy/decorator/debug"
+require "fixy/decorator/default"
+require "fixy/document"
+require "fixy/formatter/alphanumeric"
+require "fixy/record"
+require "fixy/version"

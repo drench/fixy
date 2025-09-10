@@ -1,0 +1,20 @@
+---
+include:
+- Rakefile
+- Gemfile
+- "*.gemspec"
+- "**/*.rb"
+exclude:
+- spec/**/*
+- test/**/*
+- vendor/**/*
+- ".bundle/**/*"
+require: []
+domains: []
+reporters:
+- require_not_found
+- standardrb
+require_paths: []
+plugins:
+- solargraph-standardrb
+max_files: 5000

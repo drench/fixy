@@ -1,17 +1,14 @@
 module Fixy
   class Document
-
     attr_accessor :content, :debug_mode
 
     def generate_to_file(path, debug = false)
-      File.open(path, 'w') do |file|
-        file.write(generate(debug))
-      end
+      File.write(path, generate(debug))
     end
 
     def generate(debug = false)
       @debug_mode = debug
-      @content = ''
+      @content = ""
 
       # Generate document based on user logic.
       build
