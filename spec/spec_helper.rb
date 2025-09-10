@@ -1,4 +1,4 @@
-require "rspec"
+require "simplecov"
 require "fixy"
 
 RSpec.configure do |config|
