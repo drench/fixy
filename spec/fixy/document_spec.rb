@@ -1,11 +1,7 @@
-require "spec_helper"
-
 describe "Defining a Document" do
   context "when a build action is not defined" do
-    it "should raise an exception" do
-      expect {
-        Fixy::Document.new.generate
-      }.to raise_error(NotImplementedError)
+    it "raises an exception" do
+      expect { Fixy::Document.new.generate }.to raise_error(NotImplementedError)
     end
   end
 
@@ -42,14 +38,14 @@ describe "Defining a Document" do
       end
     end
 
-    it "should generate fixed width document" do
-      PeopleDocument.new.generate.should eq "Arcturus  Mengsk    \nSarah     Kerrigan  \nJim       Raynor    \n"
-      PeopleDocument.new.generate(true).should eq File.read("spec/fixtures/debug_document.txt")
+    it "generates a fixed width document" do
+      expect(PeopleDocument.new.generate).to eq "Arcturus  Mengsk    \nSarah     Kerrigan  \nJim       Raynor    \n"
+      expect(PeopleDocument.new.generate(true)).to eq File.read("spec/fixtures/debug_document.txt")
     end
 
-    it "should parse fixed width document" do
-      ParsedPeopleDocument.new.generate.should eq "Arcturus  Mengsk    \nSarah     Kerrigan  \nJim       Raynor    \n"
-      ParsedPeopleDocument.new.generate(true).should eq File.read("spec/fixtures/debug_document.txt")
+    it "parses a fixed width document" do
+      expect(ParsedPeopleDocument.new.generate).to eq "Arcturus  Mengsk    \nSarah     Kerrigan  \nJim       Raynor    \n"
+      expect(ParsedPeopleDocument.new.generate(true)).to eq File.read("spec/fixtures/debug_document.txt")
     end
   end
 end

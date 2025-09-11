@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe "Defining a Record" do
   context "when the definition is correct" do
-    it "should not raise any exception" do
+    it "raises no exception" do
       expect {
         class PersonRecord < Fixy::Record
           include Fixy::Formatter::Alphanumeric
@@ -19,7 +19,7 @@ describe "Defining a Record" do
   end
 
   context "when the definition is incorrect" do
-    it "should raise appropriate exception" do
+    it "raises an appropriate exception" do
       expect {
         class PersonRecordA < Fixy::Record
           set_record_length 20
@@ -76,19 +76,19 @@ describe "Generating a Record" do
       end
     end
 
-    it "should generate fixed width record" do
-      PersonRecordE.new.generate.should eq "Sarah     Kerrigan  \n"
+    it "generates a fixed width record" do
+      expect(PersonRecordE.new.generate).to eq "Sarah     Kerrigan  \n"
     end
 
     context "when using the debug flag" do
-      it "should produce a debug log" do
-        PersonRecordE.new.generate(true).should eq File.read("spec/fixtures/debug_record.txt")
+      it "produces a debug log" do
+        expect(PersonRecordE.new.generate(true)).to eq File.read("spec/fixtures/debug_record.txt")
       end
     end
   end
 
   context "when dealing with multi-byte characters" do
-    it "should generate fixed width record" do
+    it "generates a fixed width record" do
       class PersonRecordMultibyte < Fixy::Record
         include Fixy::Formatter::Alphanumeric
 
@@ -100,13 +100,13 @@ describe "Generating a Record" do
       end
 
       value = PersonRecordMultibyte.new.generate
-      value.should be_valid_encoding
-      value.should == "12345678 \n"
+      expect(value).to be_valid_encoding
+      expect(value).to eq "12345678 \n"
     end
   end
 
   context "when a field value is nil" do
-    it "should emit spaces" do
+    it "emits spaces" do
       class PersonRecordNil < Fixy::Record
         include Fixy::Formatter::Alphanumeric
 
@@ -118,12 +118,12 @@ describe "Generating a Record" do
       end
 
       value = PersonRecordNil.new.generate
-      value.should == "         \n"
+      expect(value).to eq "         \n"
     end
   end
 
   context "when a field value contains the record separator" do
-    it "should strip that separator" do
+    it "strips that separator" do
       class PersonRecordNewLine < Fixy::Record
         include Fixy::Formatter::Alphanumeric
 
@@ -135,12 +135,12 @@ describe "Generating a Record" do
       end
 
       value = PersonRecordNewLine.new.generate
-      value.should == "TwoLine  \n"
+      expect(value).to eq "TwoLine  \n"
     end
   end
 
   context "when definition is incomplete (e.g. undefined columns)" do
-    it "should raise an error" do
+    it "raises an error" do
       class PersonRecordF < Fixy::Record
         include Fixy::Formatter::Alphanumeric
 
@@ -151,9 +151,8 @@ describe "Generating a Record" do
         field_value :last_name, -> { "Kerrigan" }
       end
 
-      expect {
-        PersonRecordF.new.generate
-      }.to raise_error(StandardError, "Undefined field for position 19")
+      expect { PersonRecordF.new.generate }
+        .to raise_error(StandardError, "Undefined field for position 19")
     end
   end
 
@@ -175,9 +174,9 @@ describe "Generating a Record" do
       field_value :last_name, -> { "Williams" }
     end
 
-    it "should include fields from the superclass" do
-      PersonRecordH.new.generate.slice(0, 10).should eq "Bob       "
-      PersonRecordH.new.generate.slice(10, 10).should eq "Williams  "
+    it "includes fields from the superclass" do
+      expect(PersonRecordH.new.generate.slice(0, 10)).to eq "Bob       "
+      expect(PersonRecordH.new.generate.slice(10, 10)).to eq "Williams  "
     end
 
     context "when two records inherit" do
@@ -190,11 +189,11 @@ describe "Generating a Record" do
       end
 
       it "does not collide" do
-        PersonRecordH.new.generate.slice(0, 10).should eq "Bob       "
-        PersonRecordH.new.generate.slice(10, 10).should eq "Williams  "
+        expect(PersonRecordH.new.generate.slice(0, 10)).to eq "Bob       "
+        expect(PersonRecordH.new.generate.slice(10, 10)).to eq "Williams  "
 
-        PersonRecordI.new.generate.slice(0, 10).should eq "Bob       "
-        PersonRecordI.new.generate.slice(10, 10).should eq "Jacobs    "
+        expect(PersonRecordI.new.generate.slice(0, 10)).to eq "Bob       "
+        expect(PersonRecordI.new.generate.slice(10, 10)).to eq "Jacobs    "
       end
     end
   end
@@ -208,7 +207,7 @@ describe "Generating a Record" do
     end
 
     it "uses the proc conversion as the field value" do
-      PersonRecordJ.new.generate.should eq("Use My Value".ljust(20) << "\n")
+      expect(PersonRecordJ.new.generate).to eq("Use My Value".ljust(20) << "\n")
     end
   end
 
@@ -222,7 +221,8 @@ describe "Generating a Record" do
     end
 
     it "uses the given line ending" do
-      PersonRecordWithLineEnding.new.generate.should eq("Use My Value".ljust(20) << "\r\n")
+      expect(PersonRecordWithLineEnding.new.generate)
+        .to eq("Use My Value".ljust(20) << "\r\n")
     end
   end
 end
@@ -230,32 +230,30 @@ end
 describe "Parsing a record" do
   let(:multibyte_record) { "älimuk   Karil     " }
   context "with a record of multi-byte characters" do
-    it "should not raise with the right number of bytes" do
-      PersonRecordE.parse(multibyte_record, true).should eq({
+    it "does not raise an error with the right number of bytes" do
+      expect(PersonRecordE.parse(multibyte_record, true)).to eq(
         record: File.read("spec/fixtures/debug_parsed_multibyte_record.txt"),
         fields: [
           {name: :first_name, value: "älimuk   "},
           {name: :last_name, value: "Karil     "}
         ]
-      })
+      )
     end
 
-    it "should not raise with the right amount" do
-      expect {
-        PersonRecordE.parse("älimuk  Karil     ", true)
-      }.to raise_error(StandardError, "Record length is invalid (Expected 20)")
+    it "raises an error with the wrong number of characters" do
+      expect { PersonRecordE.parse("älimuk  Karil     ", true) }
+        .to raise_error(StandardError, "Record length is invalid (Expected 20)")
     end
   end
 
   context "with custom line endings" do
     let(:record) { "Use My Value        " }
-    it "should generate fixed width record" do
-      PersonRecordWithLineEnding.parse(record).should eq({
+
+    it "generates a fixed width record" do
+      expect(PersonRecordWithLineEnding.parse(record)).to eq(
         record: (record + Fixy::Record::LINE_ENDING_CRLF),
-        fields: [
-          {name: :description, value: "Use My Value        "}
-        ]
-      })
+        fields: [{name: :description, value: "Use My Value        "}]
+      )
     end
   end
 
@@ -276,49 +274,47 @@ describe "Parsing a record" do
       end
     end
 
-    it "should generate fixed width record" do
-      PersonRecordE.parse(record).should eq({
+    it "generates a fixed width record" do
+      expect(PersonRecordE.parse(record)).to eq(
         record: (record + "\n"),
         fields: [
           {name: :first_name, value: "Sarah     "},
           {name: :last_name, value: "Kerrigan  "}
         ]
-      })
+      )
     end
 
     context "when using the debug flag" do
-      it "should produce a debug log" do
-        PersonRecordE.parse(record, true).should eq({
+      it "produces a debug log" do
+        expect(PersonRecordE.parse(record, true)).to eq(
           record: File.read("spec/fixtures/debug_parsed_record.txt"),
           fields: [
             {name: :first_name, value: "Sarah     "},
             {name: :last_name, value: "Kerrigan  "}
           ]
-        })
+        )
       end
     end
 
     context "when invalid record provided" do
       context "with a non-string record type" do
-        it "should raise an error" do
-          expect {
-            PersonRecordE.parse(nil, true)
-          }.to raise_error(StandardError, "Record must be a string")
+        it "raises an error" do
+          expect { PersonRecordE.parse(nil, true) }
+            .to raise_error(StandardError, "Record must be a string")
         end
       end
 
       context "with an invalid record length" do
-        it "should raise an error" do
-          expect {
-            PersonRecordE.parse("", true)
-          }.to raise_error(StandardError, "Record length is invalid (Expected 20)")
+        it "raises an error" do
+          expect { PersonRecordE.parse("", true) }
+            .to raise_error(StandardError, "Record length is invalid (Expected 20)")
         end
       end
     end
   end
 
   context "when definition is incomplete (e.g. undefined columns)" do
-    it "should raise an error" do
+    it "raises an error" do
       class PersonRecordL < Fixy::Record
         include Fixy::Formatter::Alphanumeric
 
@@ -329,9 +325,8 @@ describe "Parsing a record" do
         field_value :last_name, -> { "Kerrigan" }
       end
 
-      expect {
-        PersonRecordL.parse(" " * 20)
-      }.to raise_error(StandardError, "Undefined field for position 19")
+      expect { PersonRecordL.parse(" " * 20) }
+        .to raise_error(StandardError, "Undefined field for position 19")
     end
   end
 end
