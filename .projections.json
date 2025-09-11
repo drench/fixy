@@ -1,5 +1,16 @@
 {
-  "*.gemspec": { "type": "gemspec" },
+  "fixy.gemspec": {
+    "type": "gemspec",
+    "alternate": "Gemfile"
+  },
+  "Gemfile": {
+    "type": "Gemfile",
+    "alternate": "Gemfile.lock"
+  },
+  "Gemfile.lock": {
+    "type": "lock",
+    "alternate": "Gemfile"
+  },
   "lib/*.rb": {
     "type": "lib",
     "alternate": "spec/{}_spec.rb"
