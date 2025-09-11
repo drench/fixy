@@ -20,6 +20,52 @@ describe Fixy::Record do
     it "raises an appropriate exception" do
       expect {
         Class.new(described_class) do
+          include Fixy::Formatter::Alphanumeric
+
+          set_record_length 20
+          field_value :first_name, -> { "Sarah" }
+          field_value :first_name, -> { "Sarah" }
+        end
+      }.to raise_error(ArgumentError, /Method 'first_name' is already defined/)
+
+      expect {
+        Class.new(described_class) do
+          include Fixy::Formatter::Alphanumeric
+
+          set_record_length 20
+          field :first_name, 10, "1", :alphanumeric
+        end
+      }.to raise_error(ArgumentError, "Invalid Range (size: 10, range: 1)")
+
+      expect {
+        Class.new(described_class) do
+          include Fixy::Formatter::Alphanumeric
+
+          set_record_length 20
+          field :first_name, 10, "nope", :alphanumeric
+        end
+      }.to raise_error(ArgumentError, "Range 'nope' is invalid")
+
+      expect {
+        Class.new(described_class) do
+          include Fixy::Formatter::Alphanumeric
+
+          set_record_length 20
+          field "first_name", 10, "1-10", :alphanumeric
+        end
+      }.to raise_error(ArgumentError, "Name 'first_name' is not a symbol")
+
+      expect {
+        Class.new(described_class) do
+          include Fixy::Formatter::Alphanumeric
+
+          set_record_length 20
+          field :first_name, "10", "1-10", :alphanumeric
+        end
+      }.to raise_error(ArgumentError, "Size '10' is not a numeric")
+
+      expect {
+        Class.new(described_class) do
           set_record_length 20
           field :first_name, 10, "1-10", :alphanumeric
         end
@@ -106,6 +152,23 @@ describe "Generating a Record" do
       expect(value).to be_valid_encoding
       expect(value).to eq "12345678 \n"
     end
+  end
+
+  context "when a field value is a string" do
+    subject { person_record.new.generate }
+    let(:person_record) do
+      Class.new(Fixy::Record) do
+        include Fixy::Formatter::Alphanumeric
+
+        set_record_length 9
+
+        field :name, 9, "1-9", :alphanumeric
+
+        field_value :name, "Sarah"
+      end
+    end
+
+    it { is_expected.to eq "Sarah    \n" }
   end
 
   context "when a field value is nil" do
