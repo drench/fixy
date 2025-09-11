@@ -5,7 +5,7 @@ require "fixy/version"
 Gem::Specification.new do |spec|
   spec.name = "fixy"
   spec.version = Fixy::VERSION
-  spec.authors = ["Omar Skalli"]
+  spec.authors = ["Omar Skalli", "Daniel Rench"]
   spec.email = ["omar@zenpayroll.com"]
   spec.description = "Library for generating fixed width flat files."
   spec.summary = "Provides a DSL for defining, generating, and debugging fixed width documents."
@@ -13,7 +13,6 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
 
   spec.files = Dir["lib/**/*.rb"]
-  spec.executables = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
   spec.required_ruby_version = ">= 3.2.0"
