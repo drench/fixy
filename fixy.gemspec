@@ -18,6 +18,7 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = ">= 3.2.0"
 
+  spec.add_development_dependency "guard-rspec", "~> 4"
   spec.add_development_dependency "rspec", "~> 3"
   spec.add_development_dependency "simplecov", "~> 0"
   spec.add_development_dependency "standard", "~> 1"
