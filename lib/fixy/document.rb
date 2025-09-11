@@ -2,10 +2,6 @@ module Fixy
   class Document
     attr_accessor :content, :debug_mode
 
-    def generate_to_file(path, debug = false)
-      File.write(path, generate(debug))
-    end
-
     def generate(debug = false)
       @debug_mode = debug
       @content = ""

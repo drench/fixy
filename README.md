@@ -179,7 +179,7 @@ The output would be: "Arcturus  Mengsk    \nSarah     Kerrigan  \nJim       Rayn
 
 ```ruby
 
-PeopleDocument.new.generate_to_file("output.txt")
+File.write("output.txt", PeopleDocument.new.generate)
 ```
 
 ** Generating HTML Debug version **
@@ -188,7 +188,7 @@ This is most useful when getting an error such as: `Unexpected character at line
 
 ```ruby
 
-PeopleDocument.new.generate_to_file("output.html", true)
+File.write("output.html", PeopleDocument.new.generate(true))
 ```
 
 
