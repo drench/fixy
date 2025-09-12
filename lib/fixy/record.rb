@@ -97,12 +97,11 @@ module Fixy
           # Extract field data from existing record
           from = field[:from] - 1
           to = field[:to] - 1
-          method = field[:name]
           value = byte_record[from..to].pack("C*").force_encoding("utf-8")
 
-          formatted_value = decorator.field(value, current_record, current_position, method, field[:size], field[:type])
+          formatted_value = decorator.field(value, current_record, current_position, field[:name], field[:size], field[:type])
           output << formatted_value
-          fields << {name: method, value: value}
+          fields << {name: field[:name], value: value}
 
           current_position = field[:to] + 1
           current_record += 1
@@ -128,10 +127,9 @@ module Fixy
         raise StandardError, "Undefined field for position #{current_position}" unless field
 
         # We will first retrieve the value, then format it
-        method = field[:name]
-        value = send(method)
+        value = public_send(field[:name])
         formatted_value = format_value(value, field[:size], field[:type])
-        formatted_value = decorator.field(formatted_value, current_record, current_position, method, field[:size], field[:type])
+        formatted_value = decorator.field(formatted_value, current_record, current_position, field[:name], field[:size], field[:type])
 
         output << formatted_value
         current_position = field[:to] + 1
@@ -149,7 +147,7 @@ module Fixy
 
     # Format value with user defined formatters.
     def format_value(value, size, type)
-      send(:"format_#{type}", value, size)
+      public_send(:"format_#{type}", value, size)
     end
 
     # Retrieves the list of record fields that were set through the class methods.
