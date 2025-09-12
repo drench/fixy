@@ -5,7 +5,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
 
           line_ending Fixy::Record::LINE_ENDING_CRLF
 
@@ -22,7 +22,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field_value :first_name, -> { "Sarah" }
           field_value :first_name, -> { "Sarah" }
         end
@@ -36,7 +36,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field :first_name, 10, 1.., :alphanumeric
         end
       }.to raise_error(RangeError)
@@ -49,7 +49,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field :first_name, 10, "nope", :alphanumeric
         end
       }.to raise_error(ArgumentError, "Range 'nope' is invalid")
@@ -62,7 +62,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field "first_name", 10, 1..10, :alphanumeric
         end
       }.to raise_error(ArgumentError, "Name 'first_name' is not a symbol")
@@ -75,7 +75,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field :first_name, "10", 1..10, :alphanumeric
         end
       }.to raise_error(ArgumentError, "Size '10' is not a numeric")
@@ -86,7 +86,7 @@ describe Fixy::Record do
     it "raises an exception" do
       expect {
         Class.new(described_class) do
-          set_record_length 20
+          record_length 20
           field :first_name, 10, 1..10, :alphanumeric
         end
       }.to raise_error(ArgumentError, "Unknown type 'alphanumeric'")
@@ -99,7 +99,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field :first_name, 2, 1..10, :alphanumeric
         end
       }.to raise_error(ArgumentError, /Invalid Range/)
@@ -112,7 +112,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field :first_name, 10, 1..10, :alphanumeric
           field :last_name, 10, 10..19, :alphanumeric
         end
@@ -126,7 +126,7 @@ describe Fixy::Record do
         Class.new(described_class) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 10
+          record_length 10
           field :first_name, 10, 1..10, :alphanumeric
           field :last_name, 10, 11..20, :alphanumeric
         end
@@ -140,7 +140,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
 
           field :first_name, 10, 1..10, :alphanumeric
           field :last_name, 10, 11..20, :alphanumeric
@@ -172,7 +172,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 9
+          record_length 9
 
           field :name, 9, 1..9, :alphanumeric
 
@@ -191,7 +191,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 9
+          record_length 9
 
           field :name, 9, 1..9, :alphanumeric
 
@@ -207,7 +207,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 9
+          record_length 9
 
           field :name, 9, 1..9, :alphanumeric
 
@@ -227,7 +227,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 9
+          record_length 9
 
           field :name, 9, 1..9, :alphanumeric
 
@@ -247,7 +247,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field :first_name, 10, 1..10, :alphanumeric
           field :last_name, 8, 11..18, :alphanumeric
           field_value :first_name, -> { "Sarah" }
@@ -266,7 +266,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
 
           field :first_name, 10, 1..10, :alphanumeric
           field_value :first_name, -> { "Bob" }
@@ -277,7 +277,7 @@ describe Fixy::Record do
         Class.new(person_record_g) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field :last_name, 10, 11..20, :alphanumeric
           field_value :last_name, -> { "Williams" }
         end
@@ -293,7 +293,7 @@ describe Fixy::Record do
           Class.new(person_record_g) do
             include Fixy::Formatter::Alphanumeric
 
-            set_record_length 20
+            record_length 20
             field :last_name, 10, 11..20, :alphanumeric
             field_value :last_name, -> { "Jacobs" }
           end
@@ -314,7 +314,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field(:description, 20, 1..20, :alphanumeric) { "Use My Value" }
         end
       end
@@ -331,7 +331,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           line_ending Fixy::Record::LINE_ENDING_CRLF
           field(:description, 20, 1..20, :alphanumeric) { "Use My Value" }
         end
@@ -350,7 +350,7 @@ describe Fixy::Record do
       Class.new(Fixy::Record) do
         include Fixy::Formatter::Alphanumeric
 
-        set_record_length 20
+        record_length 20
 
         field :first_name, 10, 1..10, :alphanumeric
         field :last_name, 10, 11..20, :alphanumeric
@@ -395,7 +395,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           line_ending Fixy::Record::LINE_ENDING_CRLF
           field(:description, 20, 1..20, :alphanumeric) { "Use My Value" }
         end
@@ -417,7 +417,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
 
           field :first_name, 10, 1..10, :alphanumeric
           field :last_name, 10, 11..20, :alphanumeric
@@ -474,7 +474,7 @@ describe Fixy::Record do
         Class.new(Fixy::Record) do
           include Fixy::Formatter::Alphanumeric
 
-          set_record_length 20
+          record_length 20
           field :first_name, 10, 1..10, :alphanumeric
           field :last_name, 8, 11..18, :alphanumeric
           field_value :first_name, -> { "Sarah" }

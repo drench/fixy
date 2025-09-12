@@ -6,8 +6,8 @@ module Fixy
     DEFAULT_LINE_ENDING = LINE_ENDING_LF
 
     class << self
-      def set_record_length(count)
-        define_singleton_method(:record_length) { count }
+      def record_length(count = nil)
+        @record_length ||= count
       end
 
       def line_ending(character = nil)

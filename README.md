@@ -56,7 +56,7 @@ class PersonRecord < Fixy::Record
 
 	# Define record length
 	
-  set_record_length 20
+  record_length 20
 
   # Fields Declaration:
   # -----------------------------------------------------------
