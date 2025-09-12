@@ -63,8 +63,8 @@ class PersonRecord < Fixy::Record
   #       name          size      Range             Format        
   # ------------------------------------------------------------
 
-  field :first_name,     10,     '1-10' ,      :alphanumeric
-  field :last_name ,     10,     '11-20',      :alphanumeric
+  field :first_name,     10,     1..10,      :alphanumeric
+  field :last_name ,     10,     11..20,     :alphanumeric
 
 	# Any required data for the record can be 
 	# provided through the initializer
@@ -92,7 +92,7 @@ You can also specify the field definition and field value together by passing a 
 
 ```ruby
 
-field(:first_name, 10, '1-10', :alphanumeric) { @first_name }
+field(:first_name, 10, 1..10, :alphanumeric) { @first_name }
 ```
 If a record requires a specific line ending, you can specify it as part of the Record definition.
 

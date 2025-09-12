@@ -16,17 +16,16 @@ module Fixy
 
       def field(name, size, range, type, &block)
         @record_fields ||= default_record_fields
-        range_matches = range.match(/^(\d+)(?:-(\d+))?$/)
 
         # Make sure inputs are valid, we rather fail early than behave unexpectedly later.
         raise ArgumentError, "Name '#{name}' is not a symbol" unless name.is_a? Symbol
         raise ArgumentError, "Size '#{size}' is not a numeric" unless size.is_a?(Numeric) && size > 0
-        raise ArgumentError, "Range '#{range}' is invalid" unless range_matches
+        raise ArgumentError, "Range '#{range}' is invalid" unless range.is_a?(Range)
         raise ArgumentError, "Unknown type '#{type}'" unless (private_instance_methods + instance_methods).include? :"format_#{type}"
 
         # Validate the range is consistent with size
-        range_from = Integer(range_matches[1])
-        range_to = Integer(range_matches[2].nil? ? range_matches[1] : range_matches[2])
+        range_from = range.first
+        range_to = range.last
         valid_range = (range_from + (size - 1) == range_to)
 
         raise ArgumentError, "Invalid Range (size: #{size}, range: #{range})" unless valid_range
