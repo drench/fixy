@@ -10,8 +10,14 @@ module Fixy
         define_singleton_method(:record_length) { count }
       end
 
-      def set_line_ending(character)
-        @line_ending = character
+      def line_ending(character = nil)
+        if defined? @line_ending
+          @line_ending
+        elsif character.nil?
+          DEFAULT_LINE_ENDING
+        else
+          @line_ending = character
+        end
       end
 
       def field(name, size, range, type, &block)
@@ -19,7 +25,7 @@ module Fixy
 
         # Make sure inputs are valid, we rather fail early than behave unexpectedly later.
         raise ArgumentError, "Name '#{name}' is not a symbol" unless name.is_a? Symbol
-        raise ArgumentError, "Size '#{size}' is not a numeric" unless size.is_a?(Numeric) && size > 0
+        raise ArgumentError, "Size '#{size}' is not a numeric" unless size.is_a?(Numeric) && size.positive?
         raise ArgumentError, "Range '#{range}' is invalid" unless range.is_a?(Range)
         raise ArgumentError, "Unknown type '#{type}'" unless (private_instance_methods + instance_methods).include? :"format_#{type}"
 
@@ -59,11 +65,6 @@ module Fixy
       end
 
       attr_reader :record_fields
-
-      def line_ending
-        # Use the default line ending unless otherwise specified
-        @line_ending || DEFAULT_LINE_ENDING
-      end
 
       def default_record_fields
         if superclass.respond_to?(:record_fields, true) && superclass.record_fields

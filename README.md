@@ -97,7 +97,7 @@ field(:first_name, 10, 1..10, :alphanumeric) { @first_name }
 If a record requires a specific line ending, you can specify it as part of the Record definition.
 
 ```ruby
-  set_line_ending Fixy::Record::LINE_ENDING_CRLF
+  line_ending Fixy::Record::LINE_ENDING_CRLF
 ```
 
 Given a record definition, you can generate a single line (e.g. for testing purposes):

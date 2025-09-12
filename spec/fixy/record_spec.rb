@@ -7,7 +7,7 @@ describe Fixy::Record do
 
           set_record_length 20
 
-          set_line_ending Fixy::Record::LINE_ENDING_CRLF
+          line_ending Fixy::Record::LINE_ENDING_CRLF
 
           field :first_name, 10, 1..10, :alphanumeric
           field :last_name, 10, 11..20, :alphanumeric
@@ -332,7 +332,7 @@ describe Fixy::Record do
           include Fixy::Formatter::Alphanumeric
 
           set_record_length 20
-          set_line_ending Fixy::Record::LINE_ENDING_CRLF
+          line_ending Fixy::Record::LINE_ENDING_CRLF
           field(:description, 20, 1..20, :alphanumeric) { "Use My Value" }
         end
       end
@@ -396,7 +396,7 @@ describe Fixy::Record do
           include Fixy::Formatter::Alphanumeric
 
           set_record_length 20
-          set_line_ending Fixy::Record::LINE_ENDING_CRLF
+          line_ending Fixy::Record::LINE_ENDING_CRLF
           field(:description, 20, 1..20, :alphanumeric) { "Use My Value" }
         end
       end
