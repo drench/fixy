@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Chetane/fixy.svg?branch=master)](https://travis-ci.org/Chetane/fixy)
+[![Ruby](https://github.com/drench/fixy/actions/workflows/ruby.yml/badge.svg)](https://github.com/drench/fixy/actions/workflows/ruby.yml)
 
 ## fixy
 
