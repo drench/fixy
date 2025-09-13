@@ -29,23 +29,18 @@ module Fixy
         raise ArgumentError, "Range '#{range}' is invalid" unless range.is_a?(Range)
         raise ArgumentError, "Unknown type '#{type}'" unless (private_instance_methods + instance_methods).include? :"format_#{type}"
 
-        # Validate the range is consistent with size
-        range_from = range.first
-        range_to = range.last
-        valid_range = (range_from + (size - 1) == range_to)
-
-        raise ArgumentError, "Invalid Range (size: #{size}, range: #{range})" unless valid_range
-        raise ArgumentError, "Invalid Range (> #{record_length})" unless range_to <= record_length
+        raise ArgumentError, "Invalid Range (size: #{size}, range: #{range})" if range.size != size
+        raise ArgumentError, "Invalid Range (> #{record_length})" unless range.end <= record_length
 
         # Ensure range is not already covered by another definition
-        (1..range_to).each do |column|
-          if @record_fields[column] && @record_fields[column][:to] >= range_from
+        (1..range.end).each do |column|
+          if @record_fields[column] && @record_fields[column][:range].overlap?(range)
             raise ArgumentError, "Column #{column} has already been allocated"
           end
         end
 
         # We're good to go :)
-        @record_fields[range_from] = {name: name, from: range_from, to: range_to, size: size, type: type}
+        @record_fields[range.begin] = {name:, range:, type:}
 
         field_value(name, block) if block
       end
@@ -95,15 +90,15 @@ module Fixy
           raise StandardError, "Undefined field for position #{current_position}" unless field
 
           # Extract field data from existing record
-          from = field[:from] - 1
-          to = field[:to] - 1
+          from = field[:range].begin - 1
+          to = field[:range].end - 1
           value = byte_record[from..to].pack("C*").force_encoding("utf-8")
 
-          formatted_value = decorator.field(value, current_record, current_position, field[:name], field[:size], field[:type])
+          formatted_value = decorator.field(value, current_record, current_position, field[:name], field[:range].size, field[:type])
           output << formatted_value
           fields << {name: field[:name], value: value}
 
-          current_position = field[:to] + 1
+          current_position = field[:range].end + 1
           current_record += 1
         end
 
@@ -122,17 +117,16 @@ module Fixy
       current_record = 1
 
       while current_position <= self.class.record_length
-
         field = record_fields[current_position]
-        raise StandardError, "Undefined field for position #{current_position}" unless field
+        raise StandardError, "Undefined field for position #{current_position}" if field.nil?
 
         # We will first retrieve the value, then format it
         value = public_send(field[:name])
-        formatted_value = format_value(value, field[:size], field[:type])
-        formatted_value = decorator.field(formatted_value, current_record, current_position, field[:name], field[:size], field[:type])
+        formatted_value = format_value(value, field[:range].size, field[:type])
+        formatted_value = decorator.field(formatted_value, current_record, current_position, field[:name], field[:range].size, field[:type])
 
         output << formatted_value
-        current_position = field[:to] + 1
+        current_position = field[:range].end + 1
         current_record += 1
       end
 

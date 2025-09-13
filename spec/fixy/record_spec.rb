@@ -39,7 +39,7 @@ describe Fixy::Record do
           record_length 20
           field :first_name, 10, 1.., :alphanumeric
         end
-      }.to raise_error(RangeError)
+      }.to raise_error(ArgumentError, /Invalid Range/)
     end
   end
 
