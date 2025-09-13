@@ -5,6 +5,8 @@ module Fixy
     LINE_ENDING_CRLF = "#{LINE_ENDING_CR}#{LINE_ENDING_LF}".freeze
     DEFAULT_LINE_ENDING = LINE_ENDING_LF
 
+    Field = Data.define(:name, :range, :type)
+
     class << self
       def record_length(count = nil)
         @record_length ||= count
@@ -34,13 +36,13 @@ module Fixy
 
         # Ensure range is not already covered by another definition
         (1..range.end).each do |column|
-          if @record_fields[column] && @record_fields[column][:range].overlap?(range)
+          if @record_fields[column] && @record_fields[column].range.overlap?(range)
             raise ArgumentError, "Column #{column} has already been allocated"
           end
         end
 
         # We're good to go :)
-        @record_fields[range.begin] = {name:, range:, type:}
+        @record_fields[range.begin] = Field.new(name:, range:, type:)
 
         field_value(name, block) if block
       end
@@ -90,15 +92,15 @@ module Fixy
           raise StandardError, "Undefined field for position #{current_position}" unless field
 
           # Extract field data from existing record
-          from = field[:range].begin - 1
-          to = field[:range].end - 1
+          from = field.range.begin - 1
+          to = field.range.end - 1
           value = byte_record[from..to].pack("C*").force_encoding("utf-8")
 
-          formatted_value = decorator.field(value, current_record, current_position, field[:name], field[:range].size, field[:type])
+          formatted_value = decorator.field(value, current_record, current_position, field.name, field.range.size, field.type)
           output << formatted_value
-          fields << {name: field[:name], value: value}
+          fields << {name: field.name, value: value}
 
-          current_position = field[:range].end + 1
+          current_position = field.range.end + 1
           current_record += 1
         end
 
@@ -121,12 +123,12 @@ module Fixy
         raise StandardError, "Undefined field for position #{current_position}" if field.nil?
 
         # We will first retrieve the value, then format it
-        value = public_send(field[:name])
-        formatted_value = format_value(value, field[:range].size, field[:type])
-        formatted_value = decorator.field(formatted_value, current_record, current_position, field[:name], field[:range].size, field[:type])
+        value = public_send(field.name)
+        formatted_value = format_value(value, field.range.size, field.type)
+        formatted_value = decorator.field(formatted_value, current_record, current_position, field.name, field.range.size, field.type)
 
         output << formatted_value
-        current_position = field[:range].end + 1
+        current_position = field.range.end + 1
         current_record += 1
       end
 
