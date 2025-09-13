@@ -5,7 +5,12 @@ module Fixy
     LINE_ENDING_CRLF = "#{LINE_ENDING_CR}#{LINE_ENDING_LF}".freeze
     DEFAULT_LINE_ENDING = LINE_ENDING_LF
 
-    Field = Data.define(:name, :range, :type)
+    Field = Data.define(:name, :range, :type) do
+      def from = range.begin
+      def overlap?(other) = range.overlap?(other)
+      def size = range.size
+      def to = range.end
+    end
 
     class << self
       def record_length(count = nil)
@@ -36,7 +41,7 @@ module Fixy
 
         # Ensure range is not already covered by another definition
         (1..range.end).each do |column|
-          if @record_fields[column] && @record_fields[column].range.overlap?(range)
+          if @record_fields[column]&.overlap?(range)
             raise ArgumentError, "Column #{column} has already been allocated"
           end
         end
@@ -89,18 +94,18 @@ module Fixy
         while current_position <= record_length
 
           field = record_fields[current_position]
-          raise StandardError, "Undefined field for position #{current_position}" unless field
+          raise StandardError, "Undefined field for position #{current_position}" if field.nil?
 
           # Extract field data from existing record
-          from = field.range.begin - 1
-          to = field.range.end - 1
+          from = field.from - 1
+          to = field.to - 1
           value = byte_record[from..to].pack("C*").force_encoding("utf-8")
 
-          formatted_value = decorator.field(value, current_record, current_position, field.name, field.range.size, field.type)
+          formatted_value = decorator.field(value, current_record, current_position, field.name, field.size, field.type)
           output << formatted_value
           fields << {name: field.name, value: value}
 
-          current_position = field.range.end + 1
+          current_position = field.to + 1
           current_record += 1
         end
 
@@ -114,7 +119,7 @@ module Fixy
     # Generate the entry based on the record structure
     def generate(debug = false)
       decorator = debug ? Fixy::Decorator::Debug : Fixy::Decorator::Default
-      output = ""
+      output = []
       current_position = 1
       current_record = 1
 
@@ -124,36 +129,27 @@ module Fixy
 
         # We will first retrieve the value, then format it
         value = public_send(field.name)
-        formatted_value = format_value(value, field.range.size, field.type)
-        formatted_value = decorator.field(formatted_value, current_record, current_position, field.name, field.range.size, field.type)
+        formatted_value = public_send(:"format_#{field.type}", value, field.size)
+        formatted_value = decorator.field(formatted_value, current_record, current_position, field.name, field.size, field.type)
 
-        output << formatted_value
-        current_position = field.range.end + 1
+        output.push(formatted_value)
+        current_position = field.to + 1
         current_record += 1
       end
 
       # Documentation mandates that every record ends with new line.
-      output << line_ending
+      output.push(line_ending)
 
       # All ready. In the words of Mr. Peters: "Take it and go!"
-      decorator.record(output)
+      decorator.record(output.join)
     end
 
     private
 
-    # Format value with user defined formatters.
-    def format_value(value, size, type)
-      public_send(:"format_#{type}", value, size)
-    end
-
     # Retrieves the list of record fields that were set through the class methods.
-    def record_fields
-      self.class.record_fields
-    end
+    def record_fields = self.class.record_fields
 
     # Retrieves the line ending for this record type
-    def line_ending
-      self.class.line_ending
-    end
+    def line_ending = self.class.line_ending
   end
 end
