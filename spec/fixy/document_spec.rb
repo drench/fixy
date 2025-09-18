@@ -8,11 +8,11 @@ describe Fixy::Document do
   context "when a build action is defined" do
     let(:identity_record) do
       Class.new(Fixy::Record) do
-        set_record_length 20
+        record_length 20
         include Fixy::Formatter::Alphanumeric
 
-        field :first_name, 10, "1-10", :alphanumeric
-        field :last_name, 10, "11-20", :alphanumeric
+        field :first_name, 10, 1..10, :alphanumeric
+        field :last_name, 10, 11..20, :alphanumeric
 
         def initialize(first_name, last_name)
           @first_name = first_name

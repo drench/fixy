@@ -2,17 +2,9 @@ module Fixy
   module Decorator
     class Default
       class << self
-        def document(document)
-          document
-        end
-
-        def field(value, record_number, position, method, length, type)
-          value
-        end
-
-        def record(record)
-          record
-        end
+        def document(document) = document
+        def field(value, *_) = value
+        def record(record) = record
       end
     end
   end

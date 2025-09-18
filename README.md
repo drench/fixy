@@ -2,7 +2,7 @@
 
 ## fixy
 
-Library for generating fixed width flat file documents. 
+Library for generating fixed width flat file documents
 
 ## Installation
 
@@ -10,22 +10,22 @@ Library for generating fixed width flat file documents.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'fixy'
+gem "fixy"
 ```
 
 And then execute:
 
-```bash
-bundle
+```sh
+bundle install
 ```
 
 Or install it yourself as:
 
-```bash
+```sh
 gem install fixy
 ```
 
-Then proceed to creating your records, and documents as described in the paragraphs below.
+Then proceed to creating your records and documents as described below.
 
 ## Overview
 
@@ -36,7 +36,7 @@ A fixed-width document (`Fixy::Document`) is composed of multiple single-line re
 Every record is defined through a specific format, which defines the following aspects:
 
 * Record length (how many characters in the line)
-* Line ending (optional, defaults to "\n")
+* Line ending (optional; defaults to `\n`)
 * Required formatters (e.g. Alphanumeric, Rate, Amount)
 * Field declaration:
 	* Field human readable name
@@ -50,38 +50,34 @@ Below is an example of a record for defining a person's first and last name:
 ```ruby
 class PersonRecord < Fixy::Record
 
-	# Include formatters
-	
+  # Include formatters
   include Fixy::Formatter::Alphanumeric
 
-	# Define record length
-	
-  set_record_length 20
+  # Define record length
+  record_length 20
 
   # Fields Declaration:
-  # -----------------------------------------------------------
-  #       name          size      Range             Format        
-  # ------------------------------------------------------------
+  # -------------------------------------------------------
+  #     name             size    Range       Format
+  # -------------------------------------------------------
 
-  field :first_name,     10,     '1-10' ,      :alphanumeric
-  field :last_name ,     10,     '11-20',      :alphanumeric
+  field :first_name,     10,     1..10,      :alphanumeric
+  field :last_name ,     10,     11..20,     :alphanumeric
 
-	# Any required data for the record can be 
-	# provided through the initializer
-			
-	def initialize(first_name, last_name)
-	  @first_name = first_name
-	  @last_name  = last_name
-	end
-	
-	# Fields Definition:
-	# 1) Using a Proc 
-	
+  # Any required data for the record can be
+  # provided through the initializer
+
+  def initialize(first_name, last_name)
+    @first_name = first_name
+    @last_name  = last_name
+  end
+
+  # Field Definitions
+  # 1) Using a Proc
   field_value :first_name, -> { @first_name }
 
-	# 2) Using a method definition. 
-	#    This is most interesting when complex logic is involved.
-  
+  # 2) Using a method definition
+  #    This is most interesting when complex logic is involved.
   def last_name
     @last_name
   end
@@ -91,28 +87,28 @@ end
 You can also specify the field definition and field value together by passing a block to `field`.
 
 ```ruby
-
-field(:first_name, 10, '1-10', :alphanumeric) { @first_name }
+field(:first_name, 10, 1..10, :alphanumeric) { @first_name }
 ```
+
 If a record requires a specific line ending, you can specify it as part of the Record definition.
 
 ```ruby
-  set_line_ending Fixy::Record::LINE_ENDING_CRLF
+  line_ending Fixy::Record::LINE_ENDING_CRLF
 ```
 
 Given a record definition, you can generate a single line (e.g. for testing purposes):
 
 ```ruby
 PersonRecord.new('Sarah', 'Kerrigan').generate
-	
-# This will output the following 20 characters long record
-#
-#  "Sarah     Kerrigan  \n"
-#
 ```
 
-Most of the time however, you will not have to call `generate` directly, as the document will take care of that part.
+This will output the following 20 character record:
 
+```
+"Sarah     Kerrigan  \n"
+```
+
+Most of the time however, you will not have to call `#generate` directly, as the document will take care of that part.
 
 ### Parsing existing records
 
@@ -120,15 +116,17 @@ There is limited support for parsing existing records and documents. Because the
 
 ```ruby
 PersonRecord.parse "Sarah     Kerrigan  "
+```
 
-# This will generate the following hash
-# {
-#     :fields => [
-#         { :name => :first_name, :value => "Sarah     "},
-#         { :name => :last_name,  :value => "Kerrigan  "}
-#     ],
-#     :record => "Sarah     Kerrigan  \n"
-# }
+This will generate the following hash:
+```ruby
+{
+    :fields => [
+        { :name => :first_name, :value => "Sarah     "},
+        { :name => :last_name,  :value => "Kerrigan  "}
+    ],
+    :record => "Sarah     Kerrigan  \n"
+}
 ```
 
 ## Document definition
@@ -149,7 +147,6 @@ end
 
 Occasionally, it is useful to generate a document using existing records. This is particularly handy when generating debug documents (detailed in the next section).
 
-
 ```ruby
 class ParsedPeopleDocument < Fixy::Document
   def build
@@ -160,60 +157,51 @@ class ParsedPeopleDocument < Fixy::Document
 end
 ```
 
-
-
 ## Generating a document
 
 With records and documents defined, generating documents is a breeze:
 
-** Generating to string **
+### Generating a string
 
 ```ruby
-
 PeopleDocument.new.generate
 ```
 
-The output would be: "Arcturus  Mengsk    \nSarah     Kerrigan  \nJim       Raynor   "
+The output would be: `"Arcturus  Mengsk    \nSarah     Kerrigan  \nJim       Raynor   "`
 
-** Generating to file **
+### Generating a file
 
 ```ruby
-
 File.write("output.txt", PeopleDocument.new.generate)
 ```
 
-** Generating HTML Debug version **
+### Generating an HTML Debug version
 
 This is most useful when getting an error such as: `Unexpected character at line 20, column 95`. The HTML output makes it really easy to make sense out of any fixed width document, and quickly identify issues.
 
 ```ruby
-
 File.write("output.html", PeopleDocument.new.generate(true))
 ```
-
 
 ## Creating custom formatters
 
 Currently, there aren't many formatters included in this release, and you will most likely have to write your own. To create a new formatter of type `type` (e.g. amount), you simply need a method called `format_<type>(input, length)`. The argument `input` is the value being formatted, and `length` is the number of characters to fill. It is important to make sure `length` characters are returned by the formatter!
 
-An example for formatter definition: 
+An example for formatter definition:
 ```ruby
-
 module Fixy
   module Formatter
     module Numeric
       def format_numeric(input, length)
         input = input.to_s
-        raise ArgumentError, "Invalid Input (only digits are accepted)" unless input =~ /^\d+$/
+        raise ArgumentError, "Invalid Input (only digits are accepted)" if input =~ /\D/
         raise ArgumentError, "Not enough length (input: #{input}, length: #{length})" if input.length > length
-        input.rjust(length, '0')
+        input.rjust(length, "0")
       end
     end
   end
 end
 ```
-
-
 
 ## Contributing
 
@@ -222,4 +210,3 @@ end
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
-

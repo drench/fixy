@@ -5,42 +5,49 @@ module Fixy
     LINE_ENDING_CRLF = "#{LINE_ENDING_CR}#{LINE_ENDING_LF}".freeze
     DEFAULT_LINE_ENDING = LINE_ENDING_LF
 
+    Field = Data.define(:name, :range, :type) do
+      def from = range.begin
+      def overlap?(other) = range.overlap?(other)
+      def size = range.size
+      def to = range.end
+    end
+
     class << self
-      def set_record_length(count)
-        define_singleton_method(:record_length) { count }
+      def record_length(count = nil)
+        @record_length ||= count
       end
 
-      def set_line_ending(character)
-        @line_ending = character
+      def line_ending(character = nil)
+        if defined? @line_ending
+          @line_ending
+        elsif character.nil?
+          DEFAULT_LINE_ENDING
+        else
+          @line_ending = character
+        end
       end
 
       def field(name, size, range, type, &block)
         @record_fields ||= default_record_fields
-        range_matches = range.match(/^(\d+)(?:-(\d+))?$/)
 
         # Make sure inputs are valid, we rather fail early than behave unexpectedly later.
         raise ArgumentError, "Name '#{name}' is not a symbol" unless name.is_a? Symbol
-        raise ArgumentError, "Size '#{size}' is not a numeric" unless size.is_a?(Numeric) && size > 0
-        raise ArgumentError, "Range '#{range}' is invalid" unless range_matches
+        raise ArgumentError, "Size '#{size}' is not a numeric" unless size.is_a?(Numeric) && size.positive?
+        raise ArgumentError, "Range '#{range}' is invalid" unless range.is_a?(Range)
         raise ArgumentError, "Unknown type '#{type}'" unless (private_instance_methods + instance_methods).include? :"format_#{type}"
 
-        # Validate the range is consistent with size
-        range_from = Integer(range_matches[1])
-        range_to = Integer(range_matches[2].nil? ? range_matches[1] : range_matches[2])
-        valid_range = (range_from + (size - 1) == range_to)
-
-        raise ArgumentError, "Invalid Range (size: #{size}, range: #{range})" unless valid_range
-        raise ArgumentError, "Invalid Range (> #{record_length})" unless range_to <= record_length
+        raise ArgumentError, "Invalid Range (size: #{size}, range: #{range})" if range.size != size
+        raise ArgumentError, "Invalid Range (> #{record_length})" unless range.end <= record_length
 
         # Ensure range is not already covered by another definition
-        (1..range_to).each do |column|
-          if @record_fields[column] && @record_fields[column][:to] >= range_from
+        (1..range.end).each do |column|
+          if @record_fields[column]&.overlap?(range)
             raise ArgumentError, "Column #{column} has already been allocated"
           end
         end
 
         # We're good to go :)
-        @record_fields[range_from] = {name: name, from: range_from, to: range_to, size: size, type: type}
+        @record_fields[range.begin] = Field.new(name:, range:, type:)
 
         field_value(name, block) if block
       end
@@ -60,11 +67,6 @@ module Fixy
       end
 
       attr_reader :record_fields
-
-      def line_ending
-        # Use the default line ending unless otherwise specified
-        @line_ending || DEFAULT_LINE_ENDING
-      end
 
       def default_record_fields
         if superclass.respond_to?(:record_fields, true) && superclass.record_fields
@@ -92,18 +94,18 @@ module Fixy
         while current_position <= record_length
 
           field = record_fields[current_position]
-          raise StandardError, "Undefined field for position #{current_position}" unless field
+          raise StandardError, "Undefined field for position #{current_position}" if field.nil?
 
           # Extract field data from existing record
-          from = field[:from] - 1
-          to = field[:to] - 1
+          from = field.from - 1
+          to = field.to - 1
           value = byte_record[from..to].pack("C*").force_encoding("utf-8")
 
-          formatted_value = decorator.field(value, current_record, current_position, field[:name], field[:size], field[:type])
+          formatted_value = decorator.field(value, current_record, current_position, field.name, field.size, field.type)
           output << formatted_value
-          fields << {name: field[:name], value: value}
+          fields << {name: field.name, value: value}
 
-          current_position = field[:to] + 1
+          current_position = field.to + 1
           current_record += 1
         end
 
@@ -117,47 +119,37 @@ module Fixy
     # Generate the entry based on the record structure
     def generate(debug = false)
       decorator = debug ? Fixy::Decorator::Debug : Fixy::Decorator::Default
-      output = ""
+      output = []
       current_position = 1
       current_record = 1
 
       while current_position <= self.class.record_length
-
         field = record_fields[current_position]
-        raise StandardError, "Undefined field for position #{current_position}" unless field
+        raise StandardError, "Undefined field for position #{current_position}" if field.nil?
 
         # We will first retrieve the value, then format it
-        value = public_send(field[:name])
-        formatted_value = format_value(value, field[:size], field[:type])
-        formatted_value = decorator.field(formatted_value, current_record, current_position, field[:name], field[:size], field[:type])
+        value = public_send(field.name)
+        formatted_value = public_send(:"format_#{field.type}", value, field.size)
+        formatted_value = decorator.field(formatted_value, current_record, current_position, field.name, field.size, field.type)
 
-        output << formatted_value
-        current_position = field[:to] + 1
+        output.push(formatted_value)
+        current_position = field.to + 1
         current_record += 1
       end
 
       # Documentation mandates that every record ends with new line.
-      output << line_ending
+      output.push(line_ending)
 
       # All ready. In the words of Mr. Peters: "Take it and go!"
-      decorator.record(output)
+      decorator.record(output.join)
     end
 
     private
 
-    # Format value with user defined formatters.
-    def format_value(value, size, type)
-      public_send(:"format_#{type}", value, size)
-    end
-
     # Retrieves the list of record fields that were set through the class methods.
-    def record_fields
-      self.class.record_fields
-    end
+    def record_fields = self.class.record_fields
 
     # Retrieves the line ending for this record type
-    def line_ending
-      self.class.line_ending
-    end
+    def line_ending = self.class.line_ending
   end
 end
